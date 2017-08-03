@@ -78,6 +78,7 @@ public class ProxyScheduler {
 	
 	protected void initClassNamesFromConfig(){
 		
-		this.proxySourceClassNames = FileUtil.readStringListFromFile("proxysource.conf");
+		String path = Thread.currentThread().getContextClassLoader().getResource("proxysource.conf").getPath();
+		this.proxySourceClassNames = FileUtil.readStringListFromFile(path);
 	}
 }

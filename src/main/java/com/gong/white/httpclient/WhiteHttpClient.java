@@ -4,8 +4,8 @@ import java.util.Map;
 
 import com.gong.white.httpclient.proxy.pool.ProxyPool;
 import com.gong.white.httpclient.proxy.scheduler.ProxyScheduler;
+import com.gong.white.httpclient.proxy.util.HttpUtil;
 import com.gong.white.httpclient.proxy.vo.HttpProxy;
-import com.gong.white.httpclient.proxy.vo.HttpUtil;
 
 public class WhiteHttpClient {
 
@@ -81,5 +81,28 @@ public class WhiteHttpClient {
 		
 		this.curProxy = ProxyPool.getInstance().pop();
 		
+	}
+	
+	/**
+	 * sample : how to use WhiteHttpClient
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		
+		WhiteHttpClient c = new WhiteHttpClient();
+		c.init();
+		int count = 0;
+		while( true ){
+			System.out.println(count++);
+			String page = c.doGet("http://www.baidu.com", null);
+			if( page == null || "".equals(page) ){
+				c.nextProxy(-1);
+				continue;
+			} else{
+				System.out.println(page);
+				System.out.println("good hit");
+				//break;
+			}
+		}
 	}
 }

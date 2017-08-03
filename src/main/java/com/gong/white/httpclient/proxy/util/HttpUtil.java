@@ -1,4 +1,4 @@
-package com.gong.white.httpclient.proxy.vo;
+package com.gong.white.httpclient.proxy.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,11 +10,20 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Map;
 
+import com.gong.white.httpclient.proxy.vo.HttpProxy;
+
 /*
  * ref: http://www.cnblogs.com/zhuawang/archive/2012/12/08/2809380.html
  */
 public class HttpUtil {
 
+	/**
+	 * get request
+	 * @param url
+	 * @param headers
+	 * @param myProxy
+	 * @return
+	 */
 	public static String sendGet(String url, Map<String,String> headers, HttpProxy myProxy) {
 		
 		String result = "";
@@ -53,8 +62,10 @@ public class HttpUtil {
 			while ((line = in.readLine()) != null) {
 				result += line;
 			}
+			
 		} catch (Exception e) {
-			e.printStackTrace();
+			
+			result = HttpUtil.errorMsg(e);			
 		}
 		
 		finally {
@@ -69,6 +80,14 @@ public class HttpUtil {
 		return result;
 	}
 
+	/**
+	 * post request
+	 * @param url
+	 * @param headers
+	 * @param postData
+	 * @param myProxy
+	 * @return
+	 */
 	public static String sendPost(String url, Map<String,String> headers, String postData, HttpProxy myProxy) {
 		
 		PrintWriter out = null;
@@ -98,20 +117,26 @@ public class HttpUtil {
 				connection.setRequestProperty("Cache-Control", "no-cache");
 			}
 			
-			
+			// post data
 			connection.setDoOutput(true);
 			connection.setDoInput(true);
 			out = new PrintWriter(connection.getOutputStream());
 			out.print(postData);
 			out.flush();
+			
+			// get out put
 			in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 			String line;
 			while ((line = in.readLine()) != null) {
 				result += line;
 			}
+			
+			
 		} catch (Exception e) {
-			e.printStackTrace();
+			result = HttpUtil.errorMsg(e);
 		}
+		
+		
 		finally {
 			try {
 				if (out != null) {
@@ -125,5 +150,29 @@ public class HttpUtil {
 			}
 		}
 		return result;
+	}
+	
+	/**
+	 * error
+	 * @param e
+	 * @return
+	 */
+	public static String ERROR_UNKNOWN = "unknown erro";
+	public static String ERROR_CONNECTIONREFUSED = "request refused";
+	public static String ERROR_TIMEOUT = "request timeout";
+	
+	protected static String errorMsg(Exception e){
+		
+		if( e == null )
+			return null;
+		
+		String msg = e.getMessage();
+		String res = ERROR_UNKNOWN;
+		if( msg.contains("Connection refused"))
+			res = HttpUtil.ERROR_CONNECTIONREFUSED;
+		else if( msg.contains("Timeout") )
+			res = HttpUtil.ERROR_TIMEOUT;
+		
+		return res;
 	}
 }

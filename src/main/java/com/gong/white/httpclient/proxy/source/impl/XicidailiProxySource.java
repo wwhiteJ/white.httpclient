@@ -14,8 +14,8 @@ import org.htmlparser.tags.TableTag;
 import org.htmlparser.util.NodeList;
 
 import com.gong.white.httpclient.proxy.source.AbstractProxySource;
+import com.gong.white.httpclient.proxy.util.HttpUtil;
 import com.gong.white.httpclient.proxy.vo.HttpProxy;
-import com.gong.white.httpclient.proxy.vo.HttpUtil;
 
 
 /**
@@ -40,6 +40,7 @@ public class XicidailiProxySource extends AbstractProxySource{
 		headers.put("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.78 Safari/537.36");
 		
 		
+		System.out.println("start fetch proxy from xicidaili.com");
 		for( String url : urls ){
 			try{
 				String page = HttpUtil.sendGet(url, headers, null);

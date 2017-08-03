@@ -1,4 +1,4 @@
-package com.gong.white.httpclient.proxy.vo;
+package com.gong.white.httpclient.proxy.util;
 
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
