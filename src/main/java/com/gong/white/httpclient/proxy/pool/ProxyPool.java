@@ -6,11 +6,16 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.log4j.Logger;
+
+import com.gong.white.httpclient.config.Configs;
 import com.gong.white.httpclient.proxy.vo.HttpProxy;
 
 
 public class ProxyPool {
 
+	private static Logger logger = Logger.getLogger(ProxyPool.class); 
+	
 	protected BlockingQueue<HttpProxy> proxies = new LinkedBlockingQueue<HttpProxy>();
 	protected Set<String> ipset = new HashSet<String>();
 	
@@ -34,12 +39,14 @@ public class ProxyPool {
 	 */
 	public HttpProxy pop(){
 		
-		while( proxies.isEmpty() == false ){
+		while( true ){
 			try {
 				HttpProxy res = this.proxies.take();
 				
-				if( res == null )
+				if( res == null ){
+					Thread.sleep(1000);
 					continue;
+				}
 				
 				if( res.isActive() ){
 					String resIp = res.getIP() + ":" + res.getPort();
@@ -50,11 +57,11 @@ public class ProxyPool {
 					this.proxies.offer(res);
 				}
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				
+				logger.error(e.getMessage());
 			}
 		}
-		
-		return null;
+
 	}
 	
 	/**
@@ -63,15 +70,25 @@ public class ProxyPool {
 	 */
 	public void push(HttpProxy proxy){
 		
-		if( proxy != null && proxy.getIP() != null && proxy.getPort() != null ){
+		try{
 			
-			String pushIp = proxy.getIP()+":"+proxy.getPort();
-			if( this.ipset.contains(pushIp) ){
-				// already exists
-			} else{
-				this.proxies.offer(proxy);
-				this.ipset.add(pushIp);
+			if( this.proxies.size() >= Configs.MAX_PROXYPOOL_SIZE ){
+				logger.info("pushing proxy refused! proxy pool reaches max size : " + Configs.MAX_PROXYPOOL_SIZE);
+				return;
 			}
+			
+			if( proxy != null && proxy.getIP() != null && proxy.getPort() != null ){
+				
+				String pushIp = proxy.getIP()+":"+proxy.getPort();
+				if( this.ipset.contains(pushIp) ){
+					// already exists
+				} else{
+					this.proxies.offer(proxy);
+					this.ipset.add(pushIp);
+				}
+			}
+		}catch(Exception e){
+			logger.error(e.getMessage());
 		}
 	}
 	
@@ -86,6 +103,11 @@ public class ProxyPool {
 		
 		for( HttpProxy p : proxyList ){
 			this.push(p);
+			
+			if( this.proxies.size() >= Configs.MAX_PROXYPOOL_SIZE ){
+				logger.info("pushing proxy batch refused! proxy pool reaches max size : " + Configs.MAX_PROXYPOOL_SIZE);
+				break;
+			}
 		}
 	}
 
